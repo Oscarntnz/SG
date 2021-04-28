@@ -30,14 +30,13 @@ class MyObjRevo extends THREE.Object3D {
 		this.revoMat = new THREE.MeshNormalMaterial();
 
 		if (this.resolucion > 1) {
-			var revoGeom = new THREE.LatheGeometry(this.points, this.resolucion);
+			var revoGeom = new THREE.LatheBufferGeometry(this.points, this.resolucion);
 			this.revo = new THREE.Mesh(revoGeom, this.revoMat);
 			this.add(this.revo);
 			this.revo.position.y = 1.4;
 		}
 
-		var lineGeometry = new THREE.Geometry();
-		lineGeometry.vertices = this.points;
+		var lineGeometry = new THREE.BufferGeometry().setFromPoints(this.points);
 		var line = new THREE.Line(lineGeometry, this.revoMat);
 		this.add(line);
 		line.position.y = 1.4;
@@ -69,7 +68,7 @@ class MyObjRevo extends THREE.Object3D {
 			this.angulo = this.guiControls.angulo;
 
 			if(this.resolucion > 1){
-				var revoGeom = new THREE.LatheGeometry(this.points, this.resolucion, 0, this.angulo);
+				var revoGeom = new THREE.LatheBufferGeometry(this.points, this.resolucion, 0, this.angulo);
 				this.revo = new THREE.Mesh(revoGeom, this.revoMat);
 				this.add(this.revo);
 				this.revo.position.y = 1.4;

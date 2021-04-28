@@ -18,7 +18,7 @@ class MyRombo extends THREE.Object3D {
 
 		var config = {depth: 1, bevelEnabled: true, bevelSegments: 5, steps: 3, bevelSize: .5, bevelThickness: .25};
 
-		var geometria = new THREE.ExtrudeGeometry(base, config);
+		var geometria = new THREE.ExtrudeBufferGeometry(base, config);
 		this.trebol = new THREE.Mesh(geometria, material);
 		this.add(this.trebol);
 	}

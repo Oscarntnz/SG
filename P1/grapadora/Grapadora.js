@@ -24,7 +24,7 @@ class Grapadora extends THREE.Object3D {
   
   createBase() {
     // El nodo del que van a colgar la caja y los 2 conos y que se va a devolver
-    var base = new THREE.Object3D();
+    var base = new THREE.Group();
     // Cada figura, un Mesh, está compuesto de una geometría y un material
     var cajaBase = new THREE.Mesh (new THREE.BoxGeometry (5,0.4,1), this.material);
     cajaBase.position.y = 0.2;
@@ -62,7 +62,7 @@ class Grapadora extends THREE.Object3D {
     );
     cajaMovil.position.set (-2.25, 0.3, 0);
     
-    var movil = new THREE.Object3D();
+    var movil = new THREE.Group();
     // IMPORTANTE: Con independencia del orden en el que se escriban las 2 líneas siguientes, SIEMPRE se aplica primero la rotación y después la traslación. Prueba a intercambiar las dos líneas siguientes y verás que no se produce ningún cambio al ejecutar.    
     movil.rotation.z = this.guiControls.rotacion;
     movil.position.set(2.25,1,0);

@@ -8,19 +8,27 @@ class MyBarrido extends THREE.Object3D {
 
 		var base = new THREE.Shape();
 
-		base.moveTo(0, -3);
-		base.lineTo(2, 0);
-		base.lineTo(0, 3);
-		base.lineTo(-2, 0);
-		base.lineTo(0, -3);
+		base.moveTo(0, -3.5);
+		base.bezierCurveTo(2, -2.5, 5, 2.5, 2, 3.5);
+		base.bezierCurveTo(0, 3.5, 0, 2.5, 0, 1.5);
+		base.bezierCurveTo(0, 2.5, 0, 3.5, -2, 3.5);
+		base.bezierCurveTo(-5, 2.5, -2, -2.5, 0, -3.5);
 
-		var material = new THREE.MeshLambertMaterial({color: new THREE.Color('red')});
+		var trayectoria = new THREE.CatmullRomCurve3([
+			new THREE.Vector3(0, -10, 0),
+			new THREE.Vector3(2.5, -5, 0),
+			new THREE.Vector3(0, 0, -5),
+			new THREE.Vector3(-2.5, 5, 0),
+			new THREE.Vector3(0, 10, 0)
+		]);
 
-		var config = {depth: 1, bevelEnabled: true, bevelSegments: 5, steps: 3, bevelSize: .5, bevelThickness: .25};
+		var material = new THREE.MeshPhongMaterial({color: new THREE.Color('green')});
 
-		var geometria = new THREE.ExtrudeGeometry(base, config);
-		this.trebol = new THREE.Mesh(geometria, material);
-		this.add(this.trebol);
+		var config = {curveSegments: 50, steps: 50, bevelOffset: 50, extrudePath: trayectoria};
+
+		var geometria = new THREE.ExtrudeBufferGeometry(base, config);
+		this.barrido = new THREE.Mesh(geometria, material);
+		this.add(this.barrido);
 	}
 
 	createGUI(gui, titleGui) {

@@ -7,11 +7,7 @@ import { TrackballControls } from '../libs/TrackballControls.js'
 
 // Clases de mi proyecto
 
-import { MyTrebol } from './MyTrebol.js'
-import { MyHeart } from './MyHeart.js';
-import { MyAce } from './MyAce.js';
-import { MyRombo } from './MyRombo.js';
-import { MyBarrido } from './MyBarrido.js';
+import { MyReloj } from './MyReloj.js'
 
 /// La clase fachada del modelo
 /**
@@ -23,7 +19,7 @@ class MyScene extends THREE.Scene {
 		super();
 
 		this.sceneObj = [];
-		this.objPos = [new THREE.Vector3(5.0, 5.0, 0.0), new THREE.Vector3(-5.0, 5.0, 0.0), 
+		this.objPos = [new THREE.Vector3(0, 0, 0.0), new THREE.Vector3(-5.0, 5.0, 0.0), 
 			new THREE.Vector3(-5.0, -5.0, 0.0), new THREE.Vector3(5.0, -5.0, 0.0),
 			new THREE.Vector3(15.0, 0.0, 0.0)];
 		this.sceneAxis = [];
@@ -44,22 +40,10 @@ class MyScene extends THREE.Scene {
 		this.createCamera();
 
 		// Un suelo 
-		//this.createGround();
+		this.createGround();
 
-		this.trebol = new MyTrebol(this.gui, "");
-		this.sceneObj.push(this.trebol);
-
-		this.pica = new MyAce(this.gui, "");
-		this.sceneObj.push(this.pica);
-
-		this.corazon = new MyHeart(this.gui, "");
-		this.sceneObj.push(this.corazon);
-
-		this.rombo = new MyRombo(this.gui, "");
-		this.sceneObj.push(this.rombo);
-
-		this.barrido = new MyBarrido(this.gui, "");
-		this.sceneObj.push(this.barrido);
+		this.reloj = new MyReloj(this.gui);
+		this.sceneObj.push(this.reloj);
 
 		for(let i = 0; i < this.sceneObj.length; i++) {
 			this.sceneObj[i].position.set(this.sceneObj[i].position.x + this.objPos[i].x,
@@ -79,7 +63,7 @@ class MyScene extends THREE.Scene {
 	createCamera() {
 		this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 		// También se indica dónde se coloca
-		this.camera.position.set(0, 0, 20);
+		this.camera.position.set(10, 5, 15);
 		// Y hacia dónde mira
 		var look = new THREE.Vector3(0, 0, 0);
 		this.camera.lookAt(look);
@@ -99,10 +83,10 @@ class MyScene extends THREE.Scene {
 		// El suelo es un Mesh, necesita una geometría y un material.
 
 		// La geometría es una caja con muy poca altura
-		var geometryGround = new THREE.BoxBufferGeometry(50, 0.2, 50);
+		var geometryGround = new THREE.BoxGeometry(50, 0.2, 50);
 
 		// El material se hará con una textura de madera
-		var texture = new THREE.TextureLoader().load('../imgs/cara.jpg');
+		var texture = new THREE.TextureLoader().load('../imgs/wood.jpg');
 		var materialGround = new THREE.MeshPhongMaterial({ map: texture });
 
 		// Ya se puede construir el Mesh
