@@ -9,7 +9,7 @@ import { TrackballControls } from '../libs/TrackballControls.js'
 
 // Clases de mi proyecto
 
-import { MyComeCocos } from './MyComeCocos.js'
+import { Tablero } from './Tablero.js'
 
 /// La clase fachada del modelo
 /**
@@ -42,10 +42,10 @@ class MyScene extends THREE.Scene {
 		this.createCamera();
 
 		// Un suelo 
-		this.createGround();
+		//this.createGround();
 
-		this.cilindro = new MyComeCocos();
-		this.sceneObj.push(this.cilindro);
+		this.tablero = new Tablero();
+		this.sceneObj.push(this.tablero);
 
 		for(let i = 0; i < this.sceneObj.length; i++) {
 			this.sceneObj[i].position.set(this.sceneObj[i].position.x + this.objPos[i].x,
@@ -211,7 +211,7 @@ class MyScene extends THREE.Scene {
 		// Si no existiera esta línea,  update()  se ejecutaría solo la primera vez.
 		requestAnimationFrame(() => this.update())
 
-		TWEEN.update();
+		//TWEEN.update();
 	}
 }
 
