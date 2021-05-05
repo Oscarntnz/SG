@@ -17,6 +17,8 @@ import { Tablero } from './Tablero.js'
  */
 
 class MyScene extends THREE.Scene {
+	static COLORFONDO = 0x111111;
+
 	constructor(myCanvas) {
 		super();
 
@@ -65,7 +67,7 @@ class MyScene extends THREE.Scene {
 	createCamera() {
 		this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 		// También se indica dónde se coloca
-		this.camera.position.set(10, 5, 15);
+		this.camera.position.set(0, 0, 50);
 		// Y hacia dónde mira
 		var look = new THREE.Vector3(0, 0, 0);
 		this.camera.lookAt(look);
@@ -152,7 +154,7 @@ class MyScene extends THREE.Scene {
 		var renderer = new THREE.WebGLRenderer();
 
 		// Se establece un color de fondo en las imágenes que genera el render
-		renderer.setClearColor(new THREE.Color(0xEEEEEE), 1.0);
+		renderer.setClearColor(new THREE.Color(MyScene.COLORFONDO), 1.0);
 
 		// Se establece el tamaño, se aprovecha la totalidad de la ventana del navegador
 		renderer.setSize(window.innerWidth, window.innerHeight);

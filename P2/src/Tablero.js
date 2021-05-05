@@ -6,6 +6,7 @@ import * as ThreeBSP from '../libs/ThreeBSP.js'
 class Tablero extends THREE.Object3D {
 	static FILASPREDETERMINADO = 20;
 	static COLUMNASPREDETERMINADO = 10;
+	static COLOR = 0xEEEEEE;
 
 	constructor(filas = Tablero.FILASPREDETERMINADO, columnas = Tablero.COLUMNASPREDETERMINADO) {
 		super();
@@ -24,10 +25,10 @@ class Tablero extends THREE.Object3D {
 
 		for(let i = 0; i < filas; i++)
 			for(let j = 0; j < columnas; j++) {
-				this.tablero.bloques[i*j].position.x = (j - columnas/2)*2;
-				this.tablero.bloques[i*j].position.y = (filas/2 - i)*2;
+				this.tablero.bloques[i*columnas + j].position.x = (j + 1/2 - columnas/2)*tamBloque;
+				this.tablero.bloques[i*columnas + j].position.y = (filas/2 - i - 1/2)*tamBloque;
 
-				this.tablero.add(this.tablero.bloques[i*j]);
+				this.tablero.add(this.tablero.bloques[i*columnas + j]);
 			}
 
 		this.add(this.tablero);
@@ -53,14 +54,11 @@ class Tablero extends THREE.Object3D {
 
 		var finalGeo = finalBSP.toGeometry();
 
-        var material = new THREE.MeshStandardMaterial({color: 0x8F9790});
+        var material = new THREE.MeshBasicMaterial({color: Tablero.COLOR});
         var meshFinal = new THREE.BufferGeometry().fromGeometry(finalGeo);
         var final = new THREE.Mesh(meshFinal, material);
 		
 		return final;
-	}
-
-	createLine() {
 	}
 
 	update() {
