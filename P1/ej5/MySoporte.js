@@ -5,12 +5,12 @@ class MySoporte extends THREE.Object3D {
 	constructor(gui) {
 		super();
 
-        var rectangulo1 = new THREE.BoxBufferGeometry(2, 5, 0.5);
-        var rectangulo2 = new THREE.BoxBufferGeometry(2, 5, 0.5);
-        var cil = new THREE.CylinderBufferGeometry(0.5, 0.5, 2);
+        var rectangulo1 = new THREE.BoxGeometry(2, 5, 0.5);
+        var rectangulo2 = new THREE.BoxGeometry(2, 5, 0.5);
+        var cil = new THREE.CylinderGeometry(0.5, 0.5, 2);
         var cil2 = cil.clone();
-        var cil3 = new THREE.CylinderBufferGeometry(0.2, 0.2, 0.5, 20);
-        var esf = new THREE.SphereBufferGeometry(0.5, 20);
+        var cil3 = new THREE.CylinderGeometry(0.2, 0.2, 0.5, 20);
+        var esf = new THREE.SphereGeometry(0.5, 20);
         var cil4 = cil3.clone();
         var esf2 = esf.clone();
 
