@@ -40,7 +40,7 @@ class Bloque extends THREE.Group {
 
         let transparente = alfa == 1.0? false : true;
         
-        this.material = new THREE.MeshStandardMaterial({color: color, map: Bloque.TEXTURABLOQUE,
+        this.material = new THREE.MeshPhongMaterial({color: color, map: Bloque.TEXTURABLOQUE,
         opacity: alfa, transparent: transparente});
 
         let bloques;
