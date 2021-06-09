@@ -18,6 +18,8 @@ class Boton extends THREE.Group {
         this.seleccionado = false;
     }
 
+    // Cambia de material, para que se vea diferente cuando es seleccionado
+    // y el valor booleano
     cambiarSeleccion(valor) {
         if(this.texto.texto !== null && this.texto.texto !== undefined) {
             if(valor)

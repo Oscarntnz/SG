@@ -2,7 +2,7 @@ import * as THREE from '../libs/three.module.js'
 import { Boton } from './Boton.js';
 import {Texto} from './Texto.js'
 
-class Menu extends THREE.Object3D {
+class Menu extends THREE.Group {
     constructor(posicion, tam = 2) {
         super();
 

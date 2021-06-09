@@ -5,7 +5,7 @@ import * as ThreeBSP from '../libs/ThreeBSP.js'
 import { Bloque } from './Bloque.js'
 import { TipoBloques } from './TipoBloques.js';
 
-class Tablero extends THREE.Object3D {
+class Tablero extends THREE.Group {
 	static FILASPREDETERMINADO = 20;
 	static COLUMNASPREDETERMINADO = 10;
 	static COLOR = 0xEEEEEE;
@@ -27,7 +27,7 @@ class Tablero extends THREE.Object3D {
 		var b = this.crearBloque(this.tamBloque + 0.1);
 
 		this.piezas = new THREE.Group();
-		this.vPiezas = [];
+		this.vPiezas = [];	// Referencias a los bloques que hay en el tablero
 
 		this.tablero.bloques = [];
 		this.tablero.bloques.push(b);
@@ -46,7 +46,7 @@ class Tablero extends THREE.Object3D {
 		this.add(this.tablero);
 		this.add(this.piezas);
 
-		this.matrizTablero = [];
+		this.matrizTablero = []; // Referencia a las piezas de los bloques que hay en el tablero
 
 		for(let i = 0; i < this.filas; i++)
 			this.matrizTablero.push((new Array(this.columnas).fill(null)));
@@ -57,6 +57,7 @@ class Tablero extends THREE.Object3D {
 		this.generarPieza();
 	}
 
+	// Crea uno de los cuadrados que componen las lineas de la matriz del tablero
 	crearBloque(escala = 2) {
 		let bloqueGeo = new THREE.BoxGeometry(escala, escala, escala);
 		let bloqueInterior = new THREE.BoxGeometry(escala - 0.2, escala - 0.2, escala);
@@ -84,6 +85,7 @@ class Tablero extends THREE.Object3D {
 		return final;
 	}
 
+	// Genera la pieza siguiente que se va a anadir al tablero
 	generarSiguiente(tipo = null) {
 		if(tipo === null || tipo === undefined)
 				tipo = TipoBloques.aleatorio();
@@ -91,6 +93,9 @@ class Tablero extends THREE.Object3D {
 		this.siguiente = new Bloque(this.tamBloque, tipo);
 	}
 
+	// Si hay espacio, la pieza siguiente se mete en el tablero,
+	// se crea la preview (como acabaria si la tumbaramos), y 
+	// genera la pieza siguiente, y se la envia a la partida
 	generarPieza(tipo = null) {
 		if(!this.comprobarTecho()) {
 			if(tipo === null || tipo === undefined)
@@ -121,6 +126,11 @@ class Tablero extends THREE.Object3D {
 			this.partida.finDeJuego();
 	}
 
+	// Baja la pieza 1 unidad. Si esta tumbada, o sea, se quiere
+	// aplicar la gravedad a esa pieza estatica, se actualian sus
+	// coordenadas relativas. Si esta ya en el suelo, se registra
+	// en la matriz, y si estamos bajando la activa, se comprueban las filas
+	// y se genera una nueva. Devuelve true si se puede seguir bajando.
 	bajarPieza(pieza = null, tumbada = false) {
 		if(pieza === null || pieza === undefined)
 			pieza = this.piezaActiva;
@@ -158,6 +168,7 @@ class Tablero extends THREE.Object3D {
 		return false;
 	}
 
+	// Pone a null la pieza activa y elimina su preview
 	quitarPiezaActiva() {
 		this.piezas.remove(this.preview);
 		this.preview.destruir();
@@ -166,6 +177,7 @@ class Tablero extends THREE.Object3D {
 		this.preview = null;
 	}
 
+	// Baja hasta el final la pieza, y devuelve las filas bajadas
 	tumbarPieza(pieza = null) {
 		if(pieza === null || pieza === undefined)
 			pieza = this.piezaActiva;
@@ -178,6 +190,8 @@ class Tablero extends THREE.Object3D {
 		return bajado;
 	}
 
+	// Mueve la pieza activa horizontalmente,
+	// si no hay colisiones
 	desplazarHorizontalmente(direccion) {
 		if(this.piezaActiva !== null) {
 			let desplazamiento = 0;
@@ -197,6 +211,8 @@ class Tablero extends THREE.Object3D {
 		}
 	}
 
+	// Comprueba si esa pieza, una vez aplicado el offset (x e y)
+	// choca con alguna de las estaticas. No modifica su posicion.
 	comprobarColision(pieza, x = 0, y = 0) {
 		let choca = false;
 
@@ -213,6 +229,7 @@ class Tablero extends THREE.Object3D {
 		return choca;
 	}
 
+	// Devuelve true si ha llegado al final del tablero
 	comprobarSuelo(pieza) {
 		let choca = false;
 
@@ -227,6 +244,7 @@ class Tablero extends THREE.Object3D {
 		return choca;
 	}
 
+	// Comprueba si hay espacio para otra pieza
 	comprobarTecho() {
 		let choca = false;
 
@@ -241,6 +259,8 @@ class Tablero extends THREE.Object3D {
 		return choca;
 	}
 
+	// Comprueba si se saldria del tablero aplicado
+	// ese desplazamiento
 	chocaParedes(pieza, desplazamiento = 0) {
 		let choca = false;
 
@@ -256,6 +276,7 @@ class Tablero extends THREE.Object3D {
 		return choca;
 	}
 
+	// Anade las piezas de ese bloque a la matriz de piezas
 	registraPieza(pieza = null) {
 		if(pieza === null || pieza === undefined)
 			pieza = this.piezaActiva;
@@ -270,6 +291,10 @@ class Tablero extends THREE.Object3D {
 		}
 	}
 
+	// Comprueba si hay una linea completa, y por tanto
+	// eliminar las piezas afectadas. Hay que recorrer las
+	// filas de nuevo si se elimina una, ya que a las piezas
+	// de arriba se les aplica la gravedad
 	comprobarFilas() {
 		let i = this.filas - 1;
 		let filasLimpiadas = 0;
@@ -290,6 +315,7 @@ class Tablero extends THREE.Object3D {
 		this.partida.sumarLimpiadaFilas(filasLimpiadas);
 	}
 
+	// Elimina las piezas que fila, y actualiza la matriz
 	limpiarFila(fila) {
 		let f = this.matrizTablero[fila];
 
@@ -316,6 +342,7 @@ class Tablero extends THREE.Object3D {
 		});
 	}
 
+	// Se bajan las piezas que estaban arriba de fila
 	aplicarCaida(fila) {
 		let techo = false;
 
@@ -337,12 +364,14 @@ class Tablero extends THREE.Object3D {
 		return this.matrizTablero[fila].every(c => c !== null);
 	}
 
+	// Anade una pieza al grupo, y al vector de referencias
 	addPieza(pieza) {
 		this.piezas.add(pieza);
 
 		this.vPiezas.push(pieza);
 	}
 
+	// Quita la pieza del grupo, y del vector de referencias
 	quitarPieza(pieza) {
 		if(pieza == this.piezaActiva)
 			this.piezas.remove(this.preview);
@@ -353,6 +382,8 @@ class Tablero extends THREE.Object3D {
 		this.vPiezas.splice(i, 1);
 	}
 
+	// Comprueba si el bloque chocaria con algo,
+	// una vez rotado
 	comprobarRotacion(pieza, posRotado) {
 		let choca = false;
 
@@ -375,6 +406,7 @@ class Tablero extends THREE.Object3D {
 		return choca;
 	}
 
+	// Aplica una rotacion de 90 grados a la pieza activa
 	rotar() {
 		let posRotado = this.piezaActiva.rotarPosPiezas(-Math.PI/2);
 

@@ -4,7 +4,7 @@ import { Tablero } from './Tablero.js'
 import { Teclas } from './Teclas.js'
 import { Texto } from './Texto.js'
 
-class Partida extends THREE.Object3D {
+class Partida extends THREE.Group {
     static DIFICULTADES = {FACIL: {filas: 20, columnas: 10, velocidad: 2000}, 
     NORMAL: {filas: 15, columnas: 10, velocidad: 1500},
     DIFICIL: {filas: 16, columnas: 7, velocidad: 1000}};
@@ -23,6 +23,7 @@ class Partida extends THREE.Object3D {
         this.tablero = new Tablero(filas, columnas, this);
 		this.add(this.tablero);
 
+        // Textos de puntuacion, nivel, siguiente bloque
         this.textoPuntuacionPosicion = new THREE.Vector3(columnas*2, -filas/2 - 4, 0);
         this.textoTituloPuntuacion = new Texto(new THREE.Vector3(columnas*2, -filas/2, 0), 2, 'Puntuacion');
         this.textoPuntuacion = new Texto(this.textoPuntuacionPosicion, 2, this.puntuacion.toString());
@@ -43,6 +44,7 @@ class Partida extends THREE.Object3D {
         this.add(this.textoTituloSiguiente);
     }
 
+    // Inicia la animacion de tween y le avia a tablero
     iniciarPartida() {
         if(!this.acabada) {
             this.iniciarAnimacionPiezas();
@@ -50,6 +52,8 @@ class Partida extends THREE.Object3D {
         }
     }
 
+    // Suma la cantidad correspondiente con el numero
+    // de filas
     sumarLimpiadaFilas(num) {
         if(num > 0) {
             switch(num) {
@@ -72,6 +76,8 @@ class Partida extends THREE.Object3D {
         }
     }
 
+    // Suma la puntuacion, actualiza el texto, y comprueba
+    // si se ha superado el nivel
     sumarPuntuacion(num) {
         this.puntuacion += num;
         this.actualizarTextoPuntuacion();
@@ -80,6 +86,8 @@ class Partida extends THREE.Object3D {
             this.siguienteNivel();
     }
 
+    // Quita el texto de la partida, y lo recrea con la puntuacion
+    // adecuada
     actualizarTextoPuntuacion() {
         this.remove(this.textoPuntuacion);
         this.textoPuntuacion.destruir();
@@ -94,6 +102,8 @@ class Partida extends THREE.Object3D {
         this.add(this.textoNivel);
     }
 
+    // Actualiza las variables correspondientes a la hora
+    // de subir de nivel
     siguienteNivel() {
         this.puntuacionParaSiguienteNivel *= 3;
         this.velocidad /= 2;
@@ -104,6 +114,8 @@ class Partida extends THREE.Object3D {
         console.log("Nivel: " + this.nivel.toString());
     }
 
+    // Crea la animacion de Tween, la cual llama cada this.velocidad
+    // a bajarPieza de tablero
     iniciarAnimacionPiezas() {
 		let pIni = {y : 0}, pFin = {y : 1};
 		let that = this;
@@ -115,15 +127,19 @@ class Partida extends THREE.Object3D {
 		.repeat(Infinity).start();
 	}
 
+    // Crea de nuevo la animacion de gravedad, con la
+    // velocidad actualizada
     actualizarVelocidad() {
         this.acabarAnimacionPiezas();
         this.iniciarAnimacionPiezas();
     }
 
-	acabarAnimacionPiezas(){
+	acabarAnimacionPiezas() {
 		this.animacionPiezas.stop();
 	}
 
+    // Realiza la accion correspondiente con el boton
+    // presionado
     procesarBoton(e) {
         if(!this.acabada) {
             let codigo = e.which || e.keyCode;
@@ -154,10 +170,14 @@ class Partida extends THREE.Object3D {
         }
     }
 
+    // Suma el numero de filas que ha
+    // bajado
     sumarBajada(filas = 1) {
         this.sumarPuntuacion(filas);
     }
 
+    // Finaliza la animacion de gravedad
+    // e inicia la de fin de juego
     finDeJuego() {
         this.acabada = true;
         this.acabarAnimacionPiezas();
@@ -165,6 +185,9 @@ class Partida extends THREE.Object3D {
         console.log("Fin de juego");
     }
 
+    // Crea e inicia la animacion de fin de juego
+    // que es solamente un texto que se desplaza
+    // desde arriba hasta el centro de la camara
     animacionFinDeJuego() {
         let that = this;
         this.textoFinJuego = new Texto(new THREE.Vector3(0, this.tablero.filas + 10, 4), 5, 'Fin de juego');
@@ -177,6 +200,8 @@ class Partida extends THREE.Object3D {
         }).start();
     }
 
+    // Anade al grupo el siguiente bloque que saldra en el
+    // tablero
     actualizarSiguiente(siguiente) {
         if(this.siguiente !== undefined || this.siguiente !== null)
             this.remove(this.siguiente);

@@ -4,7 +4,6 @@
 
 import * as THREE from '../libs/three.module.js'
 import * as TWEEN from '../libs/tween.esm.js'
-import {GUI} from '../libs/dat.gui.module.js'
 import {TrackballControls} from '../libs/TrackballControls.js'
 
 // Clases de mi proyecto
@@ -14,10 +13,11 @@ import {Menu} from './Menu.js'
 
 class Falling extends THREE.Scene {
 	static COLORFONDO = 0x111111;
-	static debug = true;
+	static debug = false;  // Para poder controlar la camara
 
 	constructor(myCanvas) {
 		super();
+		this.background = new THREE.Color(Falling.COLORFONDO);
 
 		this.renderer = this.createRenderer(myCanvas);
 		
@@ -36,6 +36,7 @@ class Falling extends THREE.Scene {
 		this.botonSeleccionado = null;
 	}
 
+	// Crea la camara mirando a (0, 0, 0)
 	createCamera() {
 		this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 		
@@ -55,24 +56,8 @@ class Falling extends THREE.Scene {
 		this.cameraControl.target = look;
 	}
 
-	createGround() {
-		var geometryGround = new THREE.BoxGeometry(50, 0.2, 50);
-		
-		var texture = new THREE.TextureLoader().load('../imgs/wood.jpg');
-		var materialGround = new THREE.MeshPhongMaterial({ map: texture });
-		var ground = new THREE.Mesh(geometryGround, materialGround);
-
-		ground.position.y = -0.1;
-
-		this.add(ground);
-	}
-
-	createGUI() {
-		var gui = new GUI();
-
-		return gui;
-	}
-
+	// Crea 3 luces. Una ambiental, y 2 focales que estaran
+	// delante y detras del tablero
 	createLights() {
 		var ambientLight = new THREE.AmbientLight(0xccddee, 0.35);
 		
@@ -90,7 +75,7 @@ class Falling extends THREE.Scene {
 	createRenderer(myCanvas) {
 		var renderer = new THREE.WebGLRenderer();
 
-		renderer.setClearColor(new THREE.Color(Falling.COLORFONDO), 1.0);
+		renderer.setClearColor(0xFFFFFF, 1.0);
 
 		renderer.setSize(window.innerWidth, window.innerHeight);
 
@@ -120,6 +105,7 @@ class Falling extends THREE.Scene {
 			this.partida.procesarBoton(e);
 	}
 
+	// Para detectar si esta seleccionando una dificultad
 	onMouseMove(e) {
 		if(this.botones.length > 0){	
 			let mouse = new THREE.Vector2();
@@ -144,6 +130,7 @@ class Falling extends THREE.Scene {
 		}
 	}
 
+	// Si esta seleccionando un boton, se inicia una partida con esa dificultad
 	onMouseClick(e) {
 		if(this.botonSeleccionado !== null && this.botonSeleccionado !== undefined) {
 			let dificultad = this.botonSeleccionado.nombre;
@@ -152,6 +139,8 @@ class Falling extends THREE.Scene {
 		}
 	}
 
+	// Quita el menu principal de la escenta, el vector de botones
+	// y el seleccionado los pone a null
 	quitarMenu() {
 		this.remove(this.menuPrincipal);
 
@@ -159,15 +148,19 @@ class Falling extends THREE.Scene {
 		this.botonSeleccionado = null;
 	}
 
+	// Crea una partida con la dificultad seleccionada, y ajusta la camara, y las luces
 	comenzarJuego(dificultad) {
 		this.partida = new Partida(dificultad);
 		this.add(this.partida);
 		this.partida.iniciarPartida();
 
 		this.camera.position.set(0, 0, 
-			2 * this.partida.tablero.filas + this.partida.tablero.columnas * 2);
+			2 * (this.partida.tablero.filas + this.partida.tablero.columnas));
+		this.spotLight.position.z = 2 * (this.partida.tablero.filas + this.partida.tablero.columnas) + 20;
+		this.spotLightTrasera.position.z = -2 * (this.partida.tablero.filas + this.partida.tablero.columnas) - 20;
 	}
 
+	// Si debug esta activado, actualiza la posicion de la camara
 	update() {
 		if(Falling.debug)
 			this.cameraControl.update();

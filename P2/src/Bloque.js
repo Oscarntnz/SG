@@ -9,6 +9,7 @@ class Bloque extends THREE.Group {
 	constructor(tam, tipo, color = null, alfa = 1.0) {
 		super();
 
+        // Si no se ha inicializado, se carga
         if(Bloque.TEXTURABLOQUE === null || Bloque.TEXTURABLOQUE === undefined) {
             let loader = new THREE.TextureLoader();
             Bloque.TEXTURABLOQUE = loader.load('../imgs/textura_bloque.png');
@@ -20,12 +21,14 @@ class Bloque extends THREE.Group {
 		this.add(this.bloque);
 	}
 
+    // Crea la geometria de 1 de las piezas que compone el bloque
 	crearBloque(escala = 2) {
         let geometria = new THREE.BoxBufferGeometry(escala, escala, escala);
 		
 		return geometria;
 	}
 
+    // Crea las 4 piezas que componen un bloque
     crearBloques(escala = 2, color = null, alfa = 1.0) {
         this.tipo = this.tipo.toUpperCase();
 
@@ -35,12 +38,15 @@ class Bloque extends THREE.Group {
         if(color === null || color === undefined)
             color = TipoBloques.getColor(this.tipo);
 
+        let transparente = alfa == 1.0? false : true;
+        
         this.material = new THREE.MeshStandardMaterial({color: color, map: Bloque.TEXTURABLOQUE,
-        opacity: alfa, transparent: true});
+        opacity: alfa, transparent: transparente});
 
         let bloques;
         let pos = [];
 
+        // Se crea la posicion absoluta y relativa (2D) de las piezas
         switch(this.tipo) {
             case 'I':
                 pos = [
@@ -55,7 +61,7 @@ class Bloque extends THREE.Group {
                     new THREE.Vector2(2, 1),
                     new THREE.Vector2(3, 1)
                 ];
-                this.centroRotacion = new THREE.Vector2(1, 1);
+                this.centroRotacion = new THREE.Vector2(1, 1);  // En que posicion aplicamos las rotaciones relativas
                 this.anchura = 4;
                 this.altura = 1;
 
@@ -214,12 +220,11 @@ class Bloque extends THREE.Group {
             break;
         }
 
-        this.color = color;
-
         return bloques;
     }
 
-    generarBloque(escala, pos, col) {
+    // Funcion auxiliar de la anterior, crea las 4 piezas de un bloque
+    generarBloque(escala, pos) {
         let final = new THREE.Group();
         
         pos.forEach((p) => {
@@ -234,6 +239,7 @@ class Bloque extends THREE.Group {
         return final;
     }
 
+    // Funcion para mover la pieza en coordenadas relativas
     desplazar(x = 0, y = 0) {
 		this.position.x += x*this.tamBloque;
         this.position.y -= y*this.tamBloque;
@@ -247,22 +253,8 @@ class Bloque extends THREE.Group {
         this.centroRotacion.y += y;
 	}
 
-    desplazarPieza(pieza, x = 0, y = 0) {
-        console.log(pieza);
-
-		pieza.position.x += x*this.tamBloque;
-        pieza.position.y += y*this.tamBloque;
-
-        this.posBloques.forEach((e, i) => {
-            if(e === pieza) {
-                this.posBloques[i].x += x;
-                this.posBloques[i].y += y;
-
-                return;
-            }
-        });
-	}
-
+    // Mueve el bloque a x,y (relativo) dependiendo 
+    // de las filas y columnas del tablero que usemos
     setPosicion(x, y, filas, columnas) {
         if(x < 0)
             x = 0;
@@ -286,6 +278,7 @@ class Bloque extends THREE.Group {
         this.centroRotacion.y += y - 1;
     }
 
+    // Copia tanto la posicion relativa como la absoluta
     copiarPosicion(otro) {
         this.position.x = otro.position.x;
         this.position.y = otro.position.y;
@@ -299,6 +292,7 @@ class Bloque extends THREE.Group {
         this.centroRotacion.y = otro.centroRotacion.y;
     }
 
+    // Copia la posicion, la rotacion y las dimensiones
     copiarRotacion(otro) {
         this.copiarPosicion(otro);
 
@@ -308,6 +302,7 @@ class Bloque extends THREE.Group {
         this.anchura = otro.anchura;
     }
 
+    // Rota el objeto y las posiciones relativas
     rotar(posDestino = null) {
         if(this.tipo != 'O') {
             const angulo = Math.PI/2;
@@ -325,8 +320,9 @@ class Bloque extends THREE.Group {
         }
 	}
 
-    // Para comprobar como serian los bloques si los rotaramos
-    
+    // Rota las piezas sin modificar la posicion.
+    // Se usa para comprobar colisiones sin tener que
+    // deshacer el cambio
     rotarPosPiezas(angulo) {
         let puntos = [];
 
@@ -341,6 +337,9 @@ class Bloque extends THREE.Group {
         return puntos;
     }
 
+    // Se le pasa vector de posiciones relativas,
+    // un offset (x, y), y devuelve true si
+    // el bloque cubre ese area.
     cubreArea(area, x = 0, y = 0) {
         let cubre = false;
 
@@ -357,6 +356,8 @@ class Bloque extends THREE.Group {
         return cubre;
     }
 
+    // Devuelve un vector de "pair" que contiene
+    // los bloques que componen la pieza, y su posicion relativa
     devolverPiezasIndividuales() {
         let piezas = [];
 
@@ -367,13 +368,16 @@ class Bloque extends THREE.Group {
         return piezas;
 	}
 
+    // Elimina el hijo que le pase y divide el bloque
+    // actual en las piezas que le quedan, quitado su hijo.
+    // devuelve el conjunto de bloques generados
     quitar(hijo, filas, columnas) {
         let that = this;
         let hijosRestantes = [];
 
         this.bloque.children.forEach((p, i) => {
             if (hijo !== p) {
-                let nuevoHijo = new Bloque(that.tamBloque, 'B', that.color);
+                let nuevoHijo = new Bloque(that.tamBloque, 'B', TipoBloques.getColor(that.tipo));
                 nuevoHijo.setPosicion(that.posBloques[i].x, that.posBloques[i].y, filas, columnas);
 
                 hijosRestantes.push(nuevoHijo);
@@ -387,6 +391,7 @@ class Bloque extends THREE.Group {
         return hijosRestantes;
     }
 
+    // Destruye la geometria de los hijos, y el material
     destruir() {
         this.bloque.children.forEach((p, i) => {            
             p.geometry.dispose();
