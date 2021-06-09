@@ -155,9 +155,11 @@ class Falling extends THREE.Scene {
 		this.partida.iniciarPartida();
 
 		this.camera.position.set(0, 0, 
-			2 * (this.partida.tablero.filas + this.partida.tablero.columnas));
-		this.spotLight.position.z = 2 * (this.partida.tablero.filas + this.partida.tablero.columnas) + 20;
-		this.spotLightTrasera.position.z = -2 * (this.partida.tablero.filas + this.partida.tablero.columnas) - 20;
+			this.partida.tablero.tamBloque * (this.partida.tablero.filas + this.partida.tablero.columnas));
+			
+		this.spotLight.position.z = this.partida.tablero.tamBloque * (this.partida.tablero.filas + this.partida.tablero.columnas) + 20;
+		
+		this.spotLightTrasera.position.z = -this.partida.tablero.tamBloque * (this.partida.tablero.filas + this.partida.tablero.columnas) - 20;
 	}
 
 	// Si debug esta activado, actualiza la posicion de la camara
