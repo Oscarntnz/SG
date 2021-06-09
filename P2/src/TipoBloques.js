@@ -1,7 +1,6 @@
 class TipoBloques {
     static TIPOS = {I: 0xFF0000, J: 0xFFFF00, L: 0x00FF00, O: 0x00AA00, S: 0x00FFFF, T: 0x0000FF, Z: 0xFF00FF,
     B: 0xFFFFFF};
-    static EMISIVO = 0x121212;
 
     static esValido(tipo) {
         var valido = false;

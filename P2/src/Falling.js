@@ -9,9 +9,8 @@ import {TrackballControls} from '../libs/TrackballControls.js'
 
 // Clases de mi proyecto
 
-import {Tablero} from './Tablero.js'
-import {Teclas} from './Teclas.js'
-import { Bloque } from './Bloque.js'
+import {Partida} from './Partida.js'
+import {Menu} from './Menu.js'
 
 class Falling extends THREE.Scene {
 	static COLORFONDO = 0x111111;
@@ -19,43 +18,28 @@ class Falling extends THREE.Scene {
 
 	constructor(myCanvas) {
 		super();
-		this.filas = 20;
-		this.columnas = 10;
-
-		this.sceneObj = [];
-		this.objPos = [new THREE.Vector3(0.0, 0.0, 0.0), new THREE.Vector3(0.0, 0.0, 0.0)];
-		this.sceneAxis = [];
 
 		this.renderer = this.createRenderer(myCanvas);
 		
 		this.createLights();
 
-		this.createCamera(this.filas, this.columnas);
+		this.createCamera();
 
-		this.tablero = new Tablero(this.filas, this.columnas);
-		this.sceneObj.push(this.tablero);
+		this.menuPrincipal = new Menu(new THREE.Vector3(0,0,0));
+		this.add(this.menuPrincipal);
 
-		for(let i = 0; i < this.sceneObj.length; i++) {
-			this.sceneObj[i].position.set(this.sceneObj[i].position.x + this.objPos[i].x,
-				this.sceneObj[i].position.y + this.objPos[i].y, this.sceneObj[i].position.z + this.objPos[i].z);
+		this.botones = [];
+		this.menuPrincipal.getBotones().forEach((b) => {
+			this.botones.push(b);
+		});
 
-			this.add(this.sceneObj[i]);
-		}
-
-		this.axis = new THREE.AxesHelper(5);
-		this.axis.position.set(0, 0, 0);
-		this.sceneAxis.push(this.axis);
-		this.add(this.axis);
-
-		this.velocidad = 2000;
-
-		this.iniciarAnimacionPiezas();
+		this.botonSeleccionado = null;
 	}
 
-	createCamera(filas, columnas) {
+	createCamera() {
 		this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 		
-		this.camera.position.set(0, 0, filas*columnas/4);
+		this.camera.position.set(0, 0, 50);
 		
 		var look = new THREE.Vector3(0, 0, 0);
 		this.camera.lookAt(look);
@@ -132,42 +116,56 @@ class Falling extends THREE.Scene {
 	}
 
 	onKeyDown(e) {
-		let codigo = e.which || e.keyCode;
-		let valorCodigo = parseInt(codigo);
+		if(this.partida !== null && this.partida !== undefined)
+			this.partida.procesarBoton(e);
+	}
 
-		if(valorCodigo >= 37 && valorCodigo <= 40) {
-			let flecha = Teclas.FLECHAS[codigo];
+	onMouseMove(e) {
+		if(this.botones.length > 0){	
+			let mouse = new THREE.Vector2();
+			mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = 1 - 2 * (e.clientY / window.innerHeight);
 
-			if(flecha == 'I' || flecha == 'D')
-				this.tablero.desplazarHorizontalmente(flecha);
-			else if(flecha == 'AB')
-				this.tablero.bajarPieza();
-		}
-		else if(valorCodigo == 32){
-			let tecla = Teclas.ESPECIALES[codigo];
+			let raycaster = new THREE.Raycaster();
+			raycaster.setFromCamera(mouse , this.camera);
 
-			if(tecla == 'ESPACIO')
-			this.tablero.tumbarPieza();
-		}
-		else {
-			if(String.fromCharCode(codigo).toUpperCase() == 'D')
-				this.tablero.rotar();
+			let objSeleccionados = raycaster.intersectObjects(this.botones, true);
+
+			if(objSeleccionados.length > 0) {
+				let objSeleccionado = objSeleccionados[0].object.userData.parent;
+				objSeleccionado.cambiarSeleccion(true);
+
+				this.botonSeleccionado = objSeleccionado;
+			}
+			else {
+				this.botones.forEach((b) => b.cambiarSeleccion(false));
+				this.botonSeleccionado = null;
+			}
 		}
 	}
 
-	iniciarAnimacionPiezas() {
-		let pIni = {y : 0}, pFin = {y : 1};
-		let that = this;
-
-		this.animacionPiezas = new TWEEN.Tween(pIni).to(pFin, this.velocidad)
-		.onRepeat(function() {
-			that.tablero.bajarPieza();
-		})
-		.repeat(Infinity).start();
+	onMouseClick(e) {
+		if(this.botonSeleccionado !== null && this.botonSeleccionado !== undefined) {
+			let dificultad = this.botonSeleccionado.nombre;
+			this.quitarMenu();
+			this.comenzarJuego(dificultad);
+		}
 	}
 
-	acabarAnimacionPiezas(){
-		this.animacionPiezas.stop();
+	quitarMenu() {
+		this.remove(this.menuPrincipal);
+
+		this.botones = [];
+		this.botonSeleccionado = null;
+	}
+
+	comenzarJuego(dificultad) {
+		this.partida = new Partida(dificultad);
+		this.add(this.partida);
+		this.partida.iniciarPartida();
+
+		this.camera.position.set(0, 0, 
+			2 * this.partida.tablero.filas + this.partida.tablero.columnas * 2);
 	}
 
 	update() {
@@ -188,6 +186,8 @@ $(function () {
 
 	window.addEventListener("resize", () => scene.onWindowResize());
 	window.addEventListener("keydown", (e) => scene.onKeyDown(e));
+	window.addEventListener("mousemove", (e) => scene.onMouseMove(e));
+	window.addEventListener("click", (e) => scene.onMouseClick(e));
 
 	scene.update();
 });

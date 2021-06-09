@@ -1,1 +1,3 @@
-Textura bloques: https://freestocktextures.com/texture/metallic-brick-wall,525.html
+Textura bloques: https://freestocktextures.com/texture/abstract-gray-pattern-architecture-element,932.html
+fuente : https://www.1001freefonts.com/bebas-neue.font
+convertido en: https://gero3.github.io/facetype.js/

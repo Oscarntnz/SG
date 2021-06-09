@@ -10,12 +10,18 @@ class Tablero extends THREE.Object3D {
 	static COLUMNASPREDETERMINADO = 10;
 	static COLOR = 0xEEEEEE;
 
-	constructor(filas = Tablero.FILASPREDETERMINADO, columnas = Tablero.COLUMNASPREDETERMINADO) {
+	constructor(filas = Tablero.FILASPREDETERMINADO, columnas = Tablero.COLUMNASPREDETERMINADO, partida) {
 		super();
 
 		this.filas = filas;
 		this.columnas = columnas;
 		this.tablero = new THREE.Group();
+		this.partida = partida;
+
+		if(this.filas < 4)
+			this.filas = 4;
+		if(this.columnas < 4)
+			this.columnas = 4;
 
 		this.tamBloque = 2;
 		var b = this.crearBloque(this.tamBloque + 0.1);
@@ -44,44 +50,55 @@ class Tablero extends THREE.Object3D {
 
 		for(let i = 0; i < this.filas; i++)
 			this.matrizTablero.push((new Array(this.columnas).fill(null)));
+	}
 
+	comenzarJuego() {
+		this.generarSiguiente();
 		this.generarPieza();
 	}
 
 	crearBloque(escala = 2) {
-		var bloqueGeo = new THREE.BoxGeometry(escala, escala, escala);
-		var bloqueInterior = new THREE.BoxGeometry(escala - 0.2, escala - 0.2, escala);
-		var bloqueInterior2 = bloqueInterior.clone();
-		var bloqueInterior3 = bloqueInterior.clone();
+		let bloqueGeo = new THREE.BoxGeometry(escala, escala, escala);
+		let bloqueInterior = new THREE.BoxGeometry(escala - 0.2, escala - 0.2, escala);
+		let bloqueInterior2 = bloqueInterior.clone();
+		let bloqueInterior3 = bloqueInterior.clone();
 
 		bloqueInterior2.rotateX(Math.PI/2);
 		bloqueInterior3.rotateY(Math.PI/2);
 
-		var bloqueBSP = new ThreeBSP.ThreeBSP(bloqueGeo);
-        var bloqueIBSP = new ThreeBSP.ThreeBSP(bloqueInterior);
-		var bloqueI2BSP = new ThreeBSP.ThreeBSP(bloqueInterior2);
-		var bloqueI3BSP = new ThreeBSP.ThreeBSP(bloqueInterior3);
+		let bloqueBSP = new ThreeBSP.ThreeBSP(bloqueGeo);
+        let bloqueIBSP = new ThreeBSP.ThreeBSP(bloqueInterior);
+		let bloqueI2BSP = new ThreeBSP.ThreeBSP(bloqueInterior2);
+		let bloqueI3BSP = new ThreeBSP.ThreeBSP(bloqueInterior3);
 
-		var bloquesIBSP = bloqueIBSP.union(bloqueI2BSP).union(bloqueI3BSP);
+		let bloquesIBSP = bloqueIBSP.union(bloqueI2BSP).union(bloqueI3BSP);
 
-		var finalBSP = bloqueBSP.subtract(bloquesIBSP);
+		let finalBSP = bloqueBSP.subtract(bloquesIBSP);
 
-		var finalGeo = finalBSP.toGeometry();
+		let finalGeo = finalBSP.toGeometry();
 
-        var material = new THREE.MeshBasicMaterial({color: Tablero.COLOR});
-        var meshFinal = new THREE.BufferGeometry().fromGeometry(finalGeo);
-        var final = new THREE.Mesh(meshFinal, material);
+        let material = new THREE.MeshBasicMaterial({color: Tablero.COLOR});
+        let meshFinal = new THREE.BufferGeometry().fromGeometry(finalGeo);
+        let final = new THREE.Mesh(meshFinal, material);
 		
 		return final;
 	}
 
+	generarSiguiente(tipo = null) {
+		if(tipo === null || tipo === undefined)
+				tipo = TipoBloques.aleatorio();
+
+		this.siguiente = new Bloque(this.tamBloque, tipo);
+	}
+
 	generarPieza(tipo = null) {
-		if(!this.comprobarTecho()) {	
+		if(!this.comprobarTecho()) {
 			if(tipo === null || tipo === undefined)
 				tipo = TipoBloques.aleatorio();
 
-			let pieza = new Bloque(this.tamBloque, tipo);
-			let preview = new Bloque(this.tamBloque, tipo, null, 0.5);
+			let pieza = this.siguiente;
+			pieza.position.set(0,0,0);
+			let preview = new Bloque(pieza.tamBloque, pieza.tipo, null, 0.5);
 			const posicion = new THREE.Vector2(Math.floor(this.columnas/2) - Math.round(pieza.anchura/2), 0);
 
 			pieza.setPosicion(posicion.x, posicion.y, this.filas, this.columnas);
@@ -96,7 +113,12 @@ class Tablero extends THREE.Object3D {
 			this.preview = preview;
 
 			this.tumbarPieza(this.preview);
+
+			this.generarSiguiente();
+			this.partida.actualizarSiguiente(this.siguiente);
 		}
+		else
+			this.partida.finDeJuego();
 	}
 
 	bajarPieza(pieza = null, tumbada = false) {
@@ -148,7 +170,12 @@ class Tablero extends THREE.Object3D {
 		if(pieza === null || pieza === undefined)
 			pieza = this.piezaActiva;
 
-		while(this.bajarPieza(pieza));
+		let bajado = 0;
+
+		while(this.bajarPieza(pieza))
+			bajado++;
+
+		return bajado;
 	}
 
 	desplazarHorizontalmente(direccion) {
@@ -260,8 +287,7 @@ class Tablero extends THREE.Object3D {
 				i--;
 		}
 
-		if(filasLimpiadas > 0)
-			console.log("Filas limpiadas: " + filasLimpiadas.toString());
+		this.partida.sumarLimpiadaFilas(filasLimpiadas);
 	}
 
 	limpiarFila(fila) {

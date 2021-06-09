@@ -4,15 +4,15 @@ import * as THREE from '../libs/three.module.js'
 import {TipoBloques} from './TipoBloques.js'
 
 class Bloque extends THREE.Group {
-
-    static LOADER = new THREE.TextureLoader();
-    static TEXTURABLOQUE = Bloque.LOADER.load('../imgs/textura_bloque.png', (t) => {
-        t.wrapS = t.wrapT = THREE.RepeatWrapping;
-        t.repeat.set(1,1);
-    });
+    static TEXTURABLOQUE;
 
 	constructor(tam, tipo, color = null, alfa = 1.0) {
 		super();
+
+        if(Bloque.TEXTURABLOQUE === null || Bloque.TEXTURABLOQUE === undefined) {
+            let loader = new THREE.TextureLoader();
+            Bloque.TEXTURABLOQUE = loader.load('../imgs/textura_bloque.png');
+        }
 
         this.tipo = tipo.toUpperCase();
         this.tamBloque = tam;
@@ -35,7 +35,7 @@ class Bloque extends THREE.Group {
         if(color === null || color === undefined)
             color = TipoBloques.getColor(this.tipo);
 
-        this.material = new THREE.MeshStandardMaterial({color: color, map: Bloque.TEXTURABLOQUE, emissive: TipoBloques.EMISIVO,
+        this.material = new THREE.MeshStandardMaterial({color: color, map: Bloque.TEXTURABLOQUE,
         opacity: alfa, transparent: true});
 
         let bloques;
